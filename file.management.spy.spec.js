@@ -14,13 +14,50 @@ describe("File Management", () => {
       /* arrange */
       const writeSpy = spy(fs, "writeFileSync");
       const writeArgs = "";  // a txt file is created empty by default if no args are passed
-
+      // use proxyquire to provide spies if they cannot be injected manually
+      const fileManagement = proxyquire('./file.management', {fs})
       /* act */
       fileManagement.createFile("test.txt");
       
       /* assert */
       expect(writeSpy.calledWith("./data/test.txt", writeArgs))
-      .to.be.true;  // should pass, but it doesnt, explained in "using a spy"
+      .to.be.true;
+      writeSpy.restore();  // manually restoring the spy before next test
+    });
+
+    it("should not create a new file if no file name is specified", () => {
+      /* arrange */
+      const writeSpy = spy(fs, "writeFileSync");
+      const writeArgs = "";  // a txt file is created empty by default if no args are passed
+      // use proxyquire to provide spies if they cannot be injected manually
+      const fileManagement = proxyquire('./file.management', {fs})
+      /* act */
+      try {
+        fileManagement.createFile();  
+      } catch (error) {
+        
+      }
+      /* assert */
+      expect(writeSpy.notCalled)
+      .to.be.true;
+      writeSpy.restore();
+    });
+
+    // Would ensure that only this test is run
+    // it.only("should call writeFileSync - injected", () => {
+    // skip forces the test case to be skipped and reported as pending
+    it.skip("should call writeFileSync - injected", () => {
+      /* arrange */
+      const writeSpy = spy(fs, "writeFileSync");
+      const writeArgs = "";
+
+      /* act */
+      fileManagement.createFileInjected("test.txt", fs);
+      
+      /* assert */
+      expect(writeSpy.calledWith("./data/test.txt", writeArgs))
+      .to.be.true;  // this test passes because its using the spied fs function
+      writeSpy.restore();
     });
     
   });
