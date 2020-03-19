@@ -32,4 +32,17 @@ describe("file management", () => {
     expect(() => fileManagement.createFile("test.txt")).to.throw();
   });
 
+  it("createFileSafe should create a file named test1 when test already exists", () => {
+    /* arrange */
+    const writeStub = sinon.stub(fs, "writeFileSync");
+    const readStub = sinon.stub(fs, "readdirSync");
+    const fileManagement = proxyquire("./file.management", { fs });
+
+    // When these args are passed in the stub throws an exception
+    writeStub.withArgs("./data/test.txt").throws(new Error());
+
+    // In any other case it returns undefined
+    writeStub.returns(undefined);
+    readStub.returns(["test.txt"]);
+  });
 });
