@@ -43,6 +43,43 @@ describe("file management", () => {
 
     // In any other case it returns undefined
     writeStub.returns(undefined);
+
+    /* assert */
     readStub.returns(["test.txt"]);
+  });
+
+  it("getAllFiles should return a list of files", () => {
+    /* arrange */
+    const readStub = sinon.stub(fs, "readdir");
+    const fileManagement = proxyquire("./file.management", { fs });
+
+    // Specifies that readStub should yield the data in these params when used
+    // null maps to the error param, the second param is the expected data
+    readStub.yields(null, ["test.txt"]);
+
+    fileManagement.getAllFiles((err, data) => {
+      expect(data).to.eql(["test.txt"]);
+    });
+  });
+
+  it("getAllFilesPromise should return a list of files", () => {
+    /* arrange */
+    const readStub = sinon.stub(fs, "readdir");
+    // Wrapper for promises to test promise-based async.
+    // Needed because fs requires node util.promisify to return promises
+    const util = {
+      promisify: sinon.stub().returns(readStub)
+    };
+
+    const fileManagement = proxyquire("./file.management", { fs, util });
+
+    // sets readStub to return the arg when promise is resolved
+    // check reject for rejecting promises
+    readStub.resolves(["test.txt"]);
+
+    /* assert and act */    
+    return fileManagement.getAllFilesPromise().then(files => {
+      expect(files).to.eql(["test.txt"]);
+    });
   });
 });
